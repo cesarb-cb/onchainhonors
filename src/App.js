@@ -1,92 +1,61 @@
-import { ConnectWallet } from "@thirdweb-dev/react";
+
+import {
+  ConnectWallet, useNFTs, useContract,
+  useMintNFT, Web3Button
+} from "@thirdweb-dev/react";
 import "./styles/Home.css";
+const process = require('process');
 
 export default function Home() {
+  const { contract } = useContract(process.env.WALLET_ADDRESS); // replace '0x...' with your contract address
+  const { data: nfts, isLoadingNFT } = useNFTs(contract);
+  const {
+    mutateAsync: mintNft,
+    isLoading,
+    error,
+  } = useMintNFT(contract);
+
+  let nftElement;
+
+  if (isLoadingNFT) {
+    nftElement = <div>Loading...</div>;
+  }
+  if (!nfts) {
+    nftElement = "! nfts</div>";
+  }
+  if (nfts?.length === 0) {
+    nftElement = "NFTs length is 0";
+  }
+  if (nfts?.error) {
+    nftElement = "Error: {nfts.error.message}</div>";
+  }
+  if (nfts) {
+    nftElement = JSON.stringify(nfts);
+  }
+
   return (
     <main className="main">
       <div className="container">
         <div className="header">
-          <h1 className="title">
-            Welcome to{" "}
-            <span className="gradient-text-0">
-              <a
-                href="https://thirdweb.com/"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                thirdweb.
-              </a>
-            </span>
-          </h1>
 
-          <p className="description">
-            Get started by configuring your desired network in{" "}
-            <code className="code">src/index.js</code>, then modify the{" "}
-            <code className="code">src/App.js</code> file!
-          </p>
-
-          <div className="connect">
-            <ConnectWallet />
+          <div>
+            <Web3Button
+              contractAddress={process.env.CONTRACT_ADDRESS}
+              action={() =>{
+                mintNft({
+                  metadata: {
+                    name: "My NFT",
+                    description: "This is my NFT",
+                    image: "https://i.seadn.io/s/raw/files/5203cc97c7c8e602c0adc5f789224c77.png?auto=format&dpr=1&w=1000", // Accepts any URL or File type
+                  },
+                  to: "0xF0A2516C6a9C0B6B775dF2d4E09E81268492dcB7", // Use useAddress hook to get current wallet address
+                })
+              }}
+            >
+              Mint NFT
+            </Web3Button>
           </div>
-        </div>
 
-        <div className="grid">
-          <a
-            href="https://portal.thirdweb.com/"
-            className="card"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <img
-              src="/images/portal-preview.png"
-              alt="Placeholder preview of starter"
-            />
-            <div className="card-text">
-              <h2 className="gradient-text-1">Portal ➜</h2>
-              <p>
-                Guides, references, and resources that will help you build with
-                thirdweb.
-              </p>
-            </div>
-          </a>
-
-          <a
-            href="https://thirdweb.com/dashboard"
-            className="card"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <img
-              src="/images/dashboard-preview.png"
-              alt="Placeholder preview of starter"
-            />
-            <div className="card-text">
-              <h2 className="gradient-text-2">Dashboard ➜</h2>
-              <p>
-                Deploy, configure, and manage your smart contracts from the
-                dashboard.
-              </p>
-            </div>
-          </a>
-
-          <a
-            href="https://thirdweb.com/templates"
-            className="card"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <img
-              src="/images/templates-preview.png"
-              alt="Placeholder preview of templates"
-            />
-            <div className="card-text">
-              <h2 className="gradient-text-3">Templates ➜</h2>
-              <p>
-                Discover and clone template projects showcasing thirdweb
-                features.
-              </p>
-            </div>
-          </a>
         </div>
       </div>
     </main>
